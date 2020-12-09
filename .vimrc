@@ -56,6 +56,7 @@ highlight TabLineFill ctermbg=black
 let mapleader=","
 let maplocalleader = " "
 let g:vimwiki_list = [{'path': '~/Wiki/'}]
+let g:tablabel = "%N%{flagship#tabmodified()} %{flagship#tabcwds('shorten',',')}"
 
 map <localleader>id :call GetDate()<CR>
 map <localleader>p :FZF<CR>
