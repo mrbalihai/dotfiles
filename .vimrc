@@ -57,6 +57,7 @@ let mapleader=","
 let maplocalleader = " "
 let g:vimwiki_list = [{'path': '~/Wiki/'}]
 let g:tablabel = "%N%{flagship#tabmodified()} %{flagship#tabcwds('shorten',',')}"
+let g:calendar_monday = 1
 
 map <localleader>id :call GetDate()<CR>
 map <localleader>p :FZF<CR>
