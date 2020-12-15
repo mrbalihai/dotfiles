@@ -27,7 +27,7 @@ function! GetDate()
   call setline(line('.'), getline('.') . result)
 endfunction
 
-color base16-default-dark
+silent! color base16-default-dark
 set bg=dark
 set listchars=tab:>-,trail:~,extends:>,precedes:<
 set list
