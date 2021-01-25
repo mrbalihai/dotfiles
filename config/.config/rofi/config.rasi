@@ -1,0 +1,17 @@
+configuration {
+	width: 40;
+	lines: 10;
+	columns: 2;
+	font: "Avenir LT Std 14";
+	bw: 2;
+	padding: 20;
+	eh: 1;
+	auto-select: false;
+	line-margin: 10;
+	separator-style: "solid";
+	hide-scrollbar: false;
+	color-normal: "argb:00252936, #CCCCCC, argb:00252936, argb:009575cd, #FFFFFF";
+	color-urgent: "argb:00252936, #ff0000, argb:00252936, argb:00252936, #ff0000";
+	color-active: "argb:00252936, #252936, argb:00252936, argb:009575cd, #ffc000";
+	color-window: "argb:FF222222, #111111, #111111";
+}

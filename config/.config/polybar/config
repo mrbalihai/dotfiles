@@ -57,13 +57,15 @@ tray-padding = 2
 
 cursor-click = pointer
 cursor-scroll = ns-resize
+wm-restack = bspwm
+
 
 [module/bspwm]
 type = internal/bspwm
 
 label-focused = %index%
 label-focused-background = ${colors.background-alt}
-label-focused-underline= ${colors.primary}
+label-focused-underline= ${colors.magenta}
 label-focused-padding = 2
 
 label-occupied = %index%
@@ -83,8 +85,8 @@ interface = wlp8s0
 interval = 3.0
 
 format-connected = <label-connected>
-format-connected-underline = ${colors.green}
-label-connected = %essid%
+format-connected-underline = ${colors.magenta}
+label-connected =  %essid%
 
 format-disconnected =
 
@@ -100,16 +102,16 @@ time-alt = %H:%M:%S
 
 format-prefix =
 format-prefix-foreground = ${colors.foreground-alt}
-format-underline = ${colors.blue}
+format-underline = ${colors.magenta}
 
-label = %date% %time%
+label = %date% %time%
 
 [module/volume]
-type = internal/alsa
+type = internal/pulseaudio
 
 format-volume = <label-volume>
 format-volume-underline = ${colors.magenta}
-label-volume = Vol %percentage%%
+label-volume =  %percentage%%
 label-volume-foreground = ${root.foreground}
 
 label-muted = Vol muted

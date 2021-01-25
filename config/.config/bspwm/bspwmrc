@@ -3,7 +3,7 @@
 xrdb ~/.Xresources
 setxkbmap uk
 xsetroot -cursor_name left_ptr
-xrandr --output LVDS-1 off
+xrandr --output HDMI-1 --primary --preferred
 feh --bg-scale ~/.config/wallpapers
 xset s 300 5
 xss-lock -n /usr/lib/xsecurelock/dimmer -l -- xsecurelock &
@@ -11,6 +11,9 @@ picom -b --config ~/.config/picom/picom.conf
 polybar top &
 
 pgrep -x sxhkd > /dev/null || sxhkd &
+
+bspc config remove_unplugged_monitors true
+bspc config remove_disabled_monitors true
 
 bspc monitor -d I II III IV
 
@@ -23,3 +26,4 @@ bspc config gapless_monocle      true
 
 bspc config normal_border_color  "#333333"
 bspc config focused_border_color "#111111"
+
