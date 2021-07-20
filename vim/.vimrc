@@ -11,10 +11,12 @@ Plug 'tikhomirov/vim-glsl'
 Plug 'mattn/calendar-vim'
 Plug 'junegunn/goyo.vim'
 Plug 'vimwiki/vimwiki'
+Plug 'tools-life/taskwiki'
 Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-vinegar'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-flagship'
+Plug 'robbles/logstash.vim'
 
 call plug#end()
 
@@ -27,8 +29,8 @@ function! GetDate()
   call setline(line('.'), getline('.') . result)
 endfunction
 
-silent! color base16-default-dark
-set bg=dark
+silent! color base16-default-light
+set bg=light
 set listchars=tab:>-,trail:~,extends:>,precedes:<
 set list
 set tabstop=4
@@ -47,6 +49,7 @@ set guioptions-=r "scrollbar
 set foldlevelstart=5
 set showtabline=1
 set laststatus=0
+set hlsearch
 
 highlight EndOfBuffer ctermfg=black ctermbg=black
 highlight TabLine ctermbg=black
@@ -61,6 +64,8 @@ let g:calendar_monday = 1
 
 map <localleader>id :call GetDate()<CR>
 map <localleader>p :FZF<CR>
+map <localleader>gg :Ggrep<SPACE>
 map <C-n> :set invnumber<CR> <BAR> :set invrelativenumber<CR>
 
 autocmd FileType markdown setlocal spell spelllang=en_gb
+autocmd QuickFixCmdPost *grep* cwindow
