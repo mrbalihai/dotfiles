@@ -16,17 +16,18 @@ Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-vinegar'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-flagship'
-Plug 'robbles/logstash.vim'
+Plug 'airblade/vim-gitgutter'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 call plug#end()
 
 function! GetDate()
-  call inputsave()
-  let friendlyDate = input('Enter date: ')
-  call inputrestore()
-  let cmd = '/usr/bin/date --date="' . friendlyDate . '" +%F'
-  let result = substitute(system(cmd), '[\]\|[[:cntrl:]]', '', 'g')
-  call setline(line('.'), getline('.') . result)
+    call inputsave()
+    let friendlyDate = input('Enter date: ')
+    call inputrestore()
+    let cmd = '/usr/bin/date --date="' . friendlyDate . '" +%F'
+    let result = substitute(system(cmd), '[\]\|[[:cntrl:]]', '', 'g')
+    call setline(line('.'), getline('.') . result)
 endfunction
 
 silent! color base16-default-light
@@ -61,9 +62,14 @@ let maplocalleader = " "
 let g:vimwiki_list = [{'path': '~/Wiki/'}]
 let g:tablabel = "%N%{flagship#tabmodified()} %{flagship#tabcwds('shorten',',')}"
 let g:calendar_monday = 1
+let g:coc_global_extensions = [
+            \ 'coc-tsserver'
+            \ ]
+let g:coc_disable_startup_warning = 1
 
 map <localleader>id :call GetDate()<CR>
 map <localleader>p :FZF<CR>
+map <localleader>h :noh<CR>
 map <localleader>gg :Ggrep<SPACE>
 map <C-n> :set invnumber<CR> <BAR> :set invrelativenumber<CR>
 
