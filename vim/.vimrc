@@ -4,10 +4,8 @@ Plug 'chriskempson/base16-vim'
 Plug 'altercation/vim-colors-solarized'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
-Plug 'leafgarland/typescript-vim'
 Plug 'ledger/vim-ledger'
 Plug 'editorconfig/editorconfig-vim'
-Plug 'tikhomirov/vim-glsl'
 Plug 'mattn/calendar-vim'
 Plug 'junegunn/goyo.vim'
 Plug 'vimwiki/vimwiki'
@@ -16,8 +14,15 @@ Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-vinegar'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-flagship'
-Plug 'airblade/vim-gitgutter'
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
+Plug 'leafgarland/typescript-vim'
+Plug 'neovim/nvim-lspconfig'
+Plug 'hrsh7th/nvim-cmp'
+Plug 'glepnir/lspsaga.nvim'
+Plug 'kyazdani42/nvim-web-devicons'
+Plug 'folke/trouble.nvim'
+Plug 'folke/lsp-colors.nvim'
+Plug 'hrsh7th/vim-vsnip'
 
 call plug#end()
 
@@ -42,14 +47,14 @@ set nobackup
 set nowritebackup
 set cmdheight=2
 set updatetime=300
-set shortmess+=c
+" set shortmess+=c
 set directory=$HOME/.vim/swapfiles//
 set guioptions-=m "menu bar
 set guioptions-=T "toolbar
 set guioptions-=r "scrollbar
 set foldlevelstart=5
-set showtabline=1
-set laststatus=0
+" set showtabline=1
+" set laststatus=0
 set hlsearch
 
 highlight EndOfBuffer ctermfg=black ctermbg=black
@@ -62,10 +67,6 @@ let maplocalleader = " "
 let g:vimwiki_list = [{'path': '~/Wiki/'}]
 let g:tablabel = "%N%{flagship#tabmodified()} %{flagship#tabcwds('shorten',',')}"
 let g:calendar_monday = 1
-let g:coc_global_extensions = [
-            \ 'coc-tsserver'
-            \ ]
-let g:coc_disable_startup_warning = 1
 
 map <localleader>id :call GetDate()<CR>
 map <localleader>p :FZF<CR>
@@ -75,3 +76,56 @@ map <C-n> :set invnumber<CR> <BAR> :set invrelativenumber<CR>
 
 autocmd FileType markdown setlocal spell spelllang=en_gb
 autocmd QuickFixCmdPost *grep* cwindow
+
+
+lua << EOF
+    require'lsp-colors'.setup({
+        Error = "#db4b4b",
+        Warning = "#e0af68",
+        Information = "#0db9d7",
+        Hint = "#10B981"
+    })
+    require'lspconfig'.tsserver.setup({})
+    require'lspsaga'.init_lsp_saga()
+    require'trouble'.setup {}
+
+    local has_words_before = function()
+      if vim.api.nvim_buf_get_option(0, "buftype") == "prompt" then
+        return false
+      end
+      local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+      return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
+    end
+
+    local feedkey = function(key, mode)
+      vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, true, true), mode, true)
+    end
+
+    local cmp = require('cmp')
+    cmp.setup {
+      mapping = {
+        ["<Tab>"] = cmp.mapping(function(fallback)
+          if vim.fn.pumvisible() == 1 then
+            feedkey("<C-n>", "n")
+          elseif vim.fn["vsnip#available"]() == 1 then
+            feedkey("<Plug>(vsnip-expand-or-jump)", "")
+          elseif has_words_before() then
+            cmp.complete()
+          else
+            fallback() -- The fallback function sends a already mapped key. In this case, it's probably `<Tab>`.
+          end
+        end, { "i", "s" }),
+
+        ["<S-Tab>"] = cmp.mapping(function()
+          if vim.fn.pumvisible() == 1 then
+            feedkey("<C-p>", "n")
+          elseif vim.fn["vsnip#jumpable"](-1) == 1 then
+            feedkey("<Plug>(vsnip-jump-prev)", "")
+          end
+        end, { "i", "s" }),
+      }
+    }
+
+
+EOF
+
