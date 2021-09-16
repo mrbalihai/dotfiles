@@ -1,0 +1,28 @@
+# set realname = "Rob Bollons"
+# set from = "rbollons@gmail.com"
+# set smtp_url = "smtp://rbollons@gmail.com@smtp.gmail.com:587/"
+# set smtp_pass = "" # Password generated from Google Account > Security
+# set imap_user = "rbollons@gmail.com"
+# set imap_pass = "" # Password generated from Google Account > Security
+source ~/.mutt/user.muttrc
+
+set use_from = yes
+set envelope_from = yes
+set ssl_starttls = yes
+set ssl_force_tls = yes
+set imap_keepalive = 900
+set folder = "imaps://imap.gmail.com:993"
+set spoolfile = "+INBOX"
+set record = "+[Gmail]/Sent Mail"
+set postponed = "+[Gmail]/Drafts"
+set trash = "+[Gmail]/Bin"
+set header_cache = "~/.mutt/cache/headers"
+set message_cachedir = "~/.mutt/cache/bodies"
+set certificate_file = "~/.mutt/certificates"
+set move = no
+set editor = "vim"
+set charset = "utf-8"
+set record = ""
+set sort = reverse-date
+alternative_order text/plain text text/html
+auto_view text/html
