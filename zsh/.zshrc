@@ -1,5 +1,6 @@
 export PATH=${HOME}/.local/bin:/usr/local/bin:${HOME}/Workspace/esp-open-sdk/xtensa-lx106-elf/bin:${PATH}
 export ZSH="${HOME}/.oh-my-zsh"
+export EDITOR=vim
 
 # Install oh-my-zsh if it doesn't exist
 [ ! -d "${ZSH}" ] && \

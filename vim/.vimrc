@@ -1,5 +1,4 @@
 call plug#begin('~/.vim/plugged')
-
 Plug 'chriskempson/base16-vim'
 Plug 'altercation/vim-colors-solarized'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
@@ -14,15 +13,20 @@ Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-vinegar'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-flagship'
+Plug 'airblade/vim-gitgutter'
 Plug 'pangloss/vim-javascript'
-
 Plug 'leafgarland/typescript-vim'
-Plug 'neovim/nvim-lspconfig'
-Plug 'hrsh7th/nvim-cmp'
-Plug 'glepnir/lspsaga.nvim'
+
 Plug 'kyazdani42/nvim-web-devicons'
 Plug 'folke/trouble.nvim'
 Plug 'folke/lsp-colors.nvim'
+Plug 'glepnir/lspsaga.nvim'
+
+Plug 'neovim/nvim-lspconfig'
+Plug 'hrsh7th/cmp-nvim-lsp'
+Plug 'hrsh7th/cmp-buffer'
+Plug 'hrsh7th/nvim-cmp'
+Plug 'hrsh7th/cmp-vsnip'
 Plug 'hrsh7th/vim-vsnip'
 
 call plug#end()
@@ -34,6 +38,20 @@ function! GetDate()
     let cmd = '/usr/bin/date --date="' . friendlyDate . '" +%F'
     let result = substitute(system(cmd), '[\]\|[[:cntrl:]]', '', 'g')
     call setline(line('.'), getline('.') . result)
+endfunction
+
+set colorcolumn=0
+let s:color_column_old = 81
+function! s:ToggleColorColumn()
+    if s:color_column_old == 0
+        let s:color_column_old = &colorcolumn
+        "windo let &colorcolumn = 0
+        set colorcolumn=0
+    else
+        "windo let &colorcolumn=s:color_column_old
+        let &colorcolumn=s:color_column_old
+        let s:color_column_old = 0
+    endif
 endfunction
 
 " silent! color solarized
@@ -57,25 +75,38 @@ set foldlevelstart=5
 " set showtabline=1
 set laststatus=0
 set hlsearch
+set completeopt=menu,menuone,noselect
 
 highlight EndOfBuffer ctermfg=black ctermbg=black
-highlight TabLine ctermbg=black
-highlight TabLineSel ctermbg=black
-highlight TabLineFill ctermbg=black
+" highlight TabLine ctermbg=black
+" highlight TabLineSel ctermbg=black
+" highlight TabLineFill ctermbg=black
+highlight ColorColumn ctermbg=8
+highlight LineNr ctermbg=8 ctermfg=2
+highlight SignColumn ctermbg=8 ctermfg=2
+let g:gitgutter_override_sign_column_highlight = 0
+highlight GitGutterAdd ctermbg=8
+highlight GitGutterChange ctermbg=8
+highlight GitGutterDelete ctermbg=8
+highlight GitGutterChangeDelete ctermbg=8
 
-let mapleader=","
-let maplocalleader = " "
+
+let mapleader=" "
+let maplocalleader = ","
 let g:vimwiki_list = [{'path': '~/Wiki/'}]
 let g:tablabel = "%N%{flagship#tabmodified()} %{flagship#tabcwds('shorten',',')}"
 let g:calendar_monday = 1
 
-map <localleader>id :call GetDate()<CR>
-map <localleader>p :FZF<CR>
-map <localleader>f :Rg<CR>
-map <localleader>h :noh<CR>
-map <localleader>gg :Ggrep<SPACE>
-map <C-n> :set invnumber<CR> <BAR> :set invrelativenumber<CR>
-nnoremap <leader>xq <cmd>TroubleToggle quickfix<cr>
+map <leader>id :call GetDate()<CR>
+map <leader>p :Files<CR>
+map <leader>f :Rg<CR>
+map <leader>h :noh<CR>
+map <leader>g :Ggrep<SPACE>
+map <leader>c :call <SID>ToggleColorColumn()<CR>
+map <leader>n :set invnumber<CR> <BAR> :set invrelativenumber<CR>
+map <leader>. :Lspsaga code_action<CR>
+map <leader>. :<C-U>Lspsaga range_code_action<CR>
+nnoremap <silent>K :Lspsaga hover_doc<CR>
 
 autocmd FileType markdown setlocal spell spelllang=en_gb
 autocmd QuickFixCmdPost *grep* cwindow
@@ -88,9 +119,31 @@ lua << EOF
         Information = "#0db9d7",
         Hint = "#10B981"
     })
-    require'lspconfig'.tsserver.setup({})
     require'lspsaga'.init_lsp_saga()
-    require'trouble'.setup {}
-    local cmp = require('cmp')
-    cmp.setup { }
+    require'trouble'.setup {
+        auto_open = true,
+        auto_close = true
+    }
+    require'cmp'.setup({
+        snippet = {
+            expand = function(args)
+                vim.fn["vsnip#anonymous"](args.body)
+            end
+        },
+--        mapping = {
+--            ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+--            ['<C-f>'] = cmp.mapping.scroll_docs(4),
+--            ['<C-Space>'] = cmp.mapping.complete(),
+--            ['<C-e>'] = cmp.mapping.close(),
+--            ['<CR>'] = cmp.mapping.confirm({ select = true }),
+--        },
+        sources = {
+            { name = 'nvim_lsp' },
+            { name = 'vsnip' },
+            { name = 'buffer' }
+        }
+    })
+    require('lspconfig').tsserver.setup {
+        capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+    }
 EOF
