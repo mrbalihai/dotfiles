@@ -13,21 +13,14 @@ Plug 'tpope/vim-flagship'
 Plug 'airblade/vim-gitgutter'
 Plug 'pangloss/vim-javascript'
 Plug 'leafgarland/typescript-vim'
+Plug 'liuchengxu/vim-which-key'
 
-" IDE Plugins
-Plug 'folke/which-key.nvim'
-Plug 'kyazdani42/nvim-web-devicons'
-Plug 'folke/trouble.nvim'
-Plug 'folke/lsp-colors.nvim'
-Plug 'glepnir/lspsaga.nvim'
-Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim'
-Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
-Plug 'neovim/nvim-lspconfig'
-Plug 'hrsh7th/cmp-nvim-lsp'
-Plug 'hrsh7th/cmp-buffer'
-Plug 'hrsh7th/nvim-cmp'
-Plug 'L3MON4D3/LuaSnip'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+
+Plug 'prabirshrestha/vim-lsp'
+Plug 'mattn/vim-lsp-settings'
+Plug 'prabirshrestha/asyncomplete.vim'
 
 call plug#end()
 
@@ -52,13 +45,13 @@ set nobackup
 set nowritebackup
 set cmdheight=2
 set updatetime=300
-" set shortmess+=c
+set shortmess+=c
 set directory=$HOME/.vim/swapfiles//
 set guioptions-=m "menu bar
 set guioptions-=T "toolbar
 set guioptions-=r "scrollbar
 set foldlevelstart=5
-" set showtabline=1
+set showtabline=1
 set laststatus=0
 set hlsearch
 set completeopt=menu,menuone,noselect
@@ -75,8 +68,8 @@ highlight GitGutterAdd ctermbg=0
 highlight GitGutterChange ctermbg=0
 highlight GitGutterDelete ctermbg=0
 highlight GitGutterChangeDelete ctermbg=0
-highlight WhichKeyFloat ctermbg=8
 highlight Normal ctermbg=0
+highlight WhichKeyFloating ctermbg=8
 
 let g:gitgutter_override_sign_column_highlight = 0
 let mapleader = " "
@@ -84,115 +77,56 @@ let maplocalleader = ","
 let g:vimwiki_list = [{'path': '~/Wiki/'}]
 let g:tablabel = "%N%{flagship#tabmodified()} %{flagship#tabcwds('shorten',',')}"
 let g:calendar_monday = 1
+let g:which_key_centered = 0
+
+inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+inoremap <expr> <cr>    pumvisible() ? asyncomplete#close_popup() : "\<cr>"
+nnoremap <silent> <leader> :<c-u>WhichKey '<Space>'<CR>
+vnoremap <silent> <leader> :<c-u>WhichKeyVisual '<Space>'<CR>
+nnoremap <silent> <leader>id :call GetDate()<CR>
+nnoremap <silent> <leader>tc :execute "set colorcolumn=" . (&colorcolumn == "" ? "80" : "")<CR>
+nnoremap <silent> <leader>th :noh<CR>
+nnoremap <silent> <leader>tn :set invnumber<CR> <BAR> <CMD>set invrelativenumber<CR>
+nnoremap <silent> <leader>fb :Buffers<CR>
+nnoremap <silent> <leader>fc :Commits<CR>
+nnoremap <silent> <leader>ff :Files<CR>
+nnoremap <silent> <leader>fg :Rg<CR>
+nnoremap <silent> <leader>.. :LspCodeAction<CR>
+nnoremap <silent> <leader>.i :LspHover<CR>
+nnoremap <silent> <leader>.d :LspDefinition<CR>
+
+call which_key#register('<Space>', "g:which_key_map")
+let g:which_key_map =  {
+    \ 'c': { 'name': 'which_key_ignore' },
+    \ 'h': { 'name': 'which_key_ignore' },
+    \ '.': {
+        \ 'name': '+Code' ,
+        \ '.': 'Code Action',
+        \ 'i': 'Hover Info',
+        \ 'd': 'Go to Definition',
+    \ },
+    \ 'f': {
+        \ 'name': '+Find' ,
+        \ 'b': 'Buffers',
+        \ 'c': 'Git Commits',
+        \ 'f': 'Files',
+        \ 'g': 'Grep',
+    \ },
+    \ 'i': {
+        \ 'name': '+Insert' ,
+        \ 'd': 'Date',
+    \ },
+    \ 't': {
+        \ 'name': '+Toggle',
+        \ 'c': 'Colour Column',
+        \ 'h': 'Clear Search Highlight',
+        \ 'n': 'Line Numbers',
+    \ },
+    \ 'w': {
+        \ 'name': '+Wiki'
+    \}
+\ }
 
 autocmd FileType markdown setlocal spell spelllang=en_gb
 autocmd QuickFixCmdPost *grep* cwindow
-
-lua << EOF
-    require('telescope').setup {
-        extensions = {
-            fzf = {
-                fuzzy = true,
-                override_generic_sorter = true,
-                override_file_sorter = true,
-                case_mode = "smart_case",
-            }
-        }
-    }
-    require('telescope').load_extension('fzf')
-    require'lsp-colors'.setup {
-        Error = '#db4b4b',
-        Warning = '#e0af68',
-        Information = '#0db9d7',
-        Hint = '#10B981'
-    }
-    require'lspsaga'.init_lsp_saga {
-        code_action_prompt = {
-            virtual_text = true
-        }
-    }
-    require'trouble'.setup {
-        auto_open = true,
-        auto_close = true
-    }
-    local whichkey = require'which-key'
-    whichkey.register({
-        ['<leader>'] = {
-            ['.'] = {
-                name = '+Code',
-                ['.'] = { '<CMD>Lspsaga code_action<CR>', 'Action' },
-                [','] = { '<CMD>Lspsaga range_code_action<CR>', 'Range Action' },
-                ['d'] = { '<CMD>Lspsaga hover_doc<CR>', 'Hover Doc' },
-            },
-            ['c'] = 'which_key_ignore',
-            ['f'] = {
-                name = '+Find',
-                ['b'] = { '<CMD>Telescope buffers<CR>', 'Buffers' },
-                ['f'] = { '<CMD>Telescope find_files<CR>', 'Files' },
-                ['g'] = { '<CMD>Telescope live_grep<CR>', 'Grep' },
-                ['h'] = { '<CMD>Telescope help_tags<CR>', 'Help tags' },
-            },
-            ['h'] = 'which_key_ignore',
-            ['i'] = {
-                name = '+Insert',
-                ['d'] = { '<CMD>call GetDate()', 'Date' },
-            },
-            ['t'] = {
-                name = '+Toggle',
-                ['c'] = { '<CMD>execute "set colorcolumn=" . (&colorcolumn == "" ? "80" : "")<CR>', 'Colour Column' },
-                ['h'] = { '<CMD>noh<CR>', 'Clear Search Highlight' },
-                ['n'] = { '<CMD>set invnumber<CR> <BAR> <CMD>set invrelativenumber<CR>', 'Line Numbers' },
-            },
-            ['w'] = {
-                name = '+Wiki',
-                ['i'] = { '<CMD><Plug>VimwikiDiaryIndex <space>', '' },
-                ['s'] = { '<CMD><Plug>VimwikiUISelect', '' },
-                ['t'] = { '<CMD><Plug>VimwikiTabIndex', '' },
-                ['i'] = { '<CMD><Plug>VimwikiIndex', '' },
-            },
-        },
-    })
-
-    local luasnip = require'luasnip'
-    local cmp = require'cmp'
-    cmp.setup({
-        snippet = {
-            expand = function(args)
-                luasnip.lsp_expand(args.body)
-            end
-        },
-        mapping = {
-            ['<C-e>'] = cmp.mapping.close(),
-            ['<CR>'] = cmp.mapping.confirm {
-                behavior = cmp.ConfirmBehavior.Replace,
-                select = true,
-            },
-            ['<Tab>'] = function(fallback)
-                if vim.fn.pumvisible() == 1 then
-                    vim.fn.feedkeys(vim.api.nvim_replace_termcodes('<C-n>', true, true, true), 'n')
-                elseif luasnip.expand_or_jumpable() then
-                    vim.fn.feedkeys(vim.api.nvim_replace_termcodes('<Plug>luasnip-expand-or-jump', true, true, true), '')
-                else
-                    fallback()
-                end
-            end,
-            ['<S-Tab>'] = function(fallback)
-                if vim.fn.pumvisible() == 1 then
-                    vim.fn.feedkeys(vim.api.nvim_replace_termcodes('<C-p>', true, true, true), 'n')
-                elseif luasnip.jumpable(-1) then
-                    vim.fn.feedkeys(vim.api.nvim_replace_termcodes('<Plug>luasnip-jump-prev', true, true, true), '')
-                else
-                    fallback()
-                end
-            end,
-        },
-        sources = {
-            { name = 'nvim_lsp' },
-            { name = 'luasnip' },
-            { name = 'buffer' }
-        }
-    })
-    require('lspconfig').tsserver.setup {
-        capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
-    }
-EOF
