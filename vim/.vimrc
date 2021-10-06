@@ -19,8 +19,10 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 
 Plug 'prabirshrestha/vim-lsp'
-Plug 'mattn/vim-lsp-settings'
 Plug 'prabirshrestha/asyncomplete.vim'
+Plug 'prabirshrestha/asyncomplete-lsp.vim'
+Plug 'mattn/vim-lsp-settings'
+Plug 'ervandew/supertab'
 
 call plug#end()
 
@@ -79,9 +81,15 @@ let g:tablabel = "%N%{flagship#tabmodified()} %{flagship#tabcwds('shorten',',')}
 let g:calendar_monday = 1
 let g:which_key_centered = 0
 
-inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-inoremap <expr> <cr>    pumvisible() ? asyncomplete#close_popup() : "\<cr>"
+let g:lsp_diagnostics_signs_error = {'text': ''}
+let g:lsp_diagnostics_signs_warning = {'text': '' }
+let g:lsp_diagnostics_signs_hint = {'text': ''}
+let g:lsp_document_code_action_signs_hint = {'text': ''}
+let g:lsp_diagnostics_float_cursor = 1
+
+" inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+" inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+" inoremap <expr> <cr>    pumvisible() ? asyncomplete#close_popup() : "\<cr>"
 nnoremap <silent> <leader> :<c-u>WhichKey '<Space>'<CR>
 vnoremap <silent> <leader> :<c-u>WhichKeyVisual '<Space>'<CR>
 nnoremap <silent> <leader>id :call GetDate()<CR>
