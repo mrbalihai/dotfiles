@@ -25,10 +25,6 @@ export NVM_DIR="$HOME/.nvm"
     curl -fLo ${HOME}/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim && \
     vim +PlugInstall +qall
 
-## WSL Specific
-export DISPLAY=$(awk '/nameserver / {print $2; exit}' /etc/resolv.conf 2>/dev/null):0
-export LIBGL_ALWAYS_INDIRECT=1
-
 if command -v tmux >/dev/null 2>&1; then
     # if not inside a tmux session, and if no session is started, start a new session
     [ -z "${TMUX}" ] && (tmux attach || tmux) >/dev/null 2>&1
