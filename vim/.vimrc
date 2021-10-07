@@ -1,5 +1,6 @@
 call plug#begin('~/.vim/plugged')
 Plug 'altercation/vim-colors-solarized'
+Plug 'overcache/NeoSolarized'
 Plug 'ledger/vim-ledger'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'mattn/calendar-vim'
@@ -13,8 +14,6 @@ Plug 'tpope/vim-flagship'
 Plug 'airblade/vim-gitgutter'
 Plug 'pangloss/vim-javascript'
 Plug 'leafgarland/typescript-vim'
-
-" IDE Plugins
 Plug 'folke/which-key.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
 Plug 'nvim-lua/plenary.nvim'
@@ -34,7 +33,8 @@ function! GetDate()
     call setline(line('.'), getline('.') . result)
 endfunction
 
-colorscheme solarized
+set termguicolors
+colorscheme NeoSolarized
 set bg=dark
 set listchars=tab:>-,trail:~,extends:>,precedes:<
 set list
@@ -58,19 +58,8 @@ set hlsearch
 set completeopt=menuone,noinsert,noselect
 set timeoutlen=300
 
-highlight EndOfBuffer ctermfg=0 ctermbg=0
-highlight TabLine ctermbg=8
-highlight TabLineSel ctermbg=8
-highlight TabLineFill ctermbg=8
-highlight ColorColumn ctermbg=8
-highlight LineNr ctermbg=8 ctermfg=2
-highlight SignColumn ctermbg=0 ctermfg=2
-highlight GitGutterAdd ctermbg=0
-highlight GitGutterChange ctermbg=0
-highlight GitGutterDelete ctermbg=0
-highlight GitGutterChangeDelete ctermbg=0
-highlight WhichKeyFloat ctermbg=8
-highlight Normal ctermbg=0
+hi! EndOfBuffer guifg=bg guibg=bg ctermfg=bg ctermbg=bg
+hi! WhichKeyFloat ctermbg=0 guibg=#073642
 
 let g:gitgutter_override_sign_column_highlight = 0
 let mapleader = " "
@@ -84,6 +73,8 @@ autocmd QuickFixCmdPost *grep* cwindow
 
 inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+imap <tab> <Plug>(completion_smart_tab)
+imap <s-tab> <Plug>(completion_smart_s_tab)
 
 lua << EOF
     require'nvim-web-devicons'.setup {
@@ -140,8 +131,22 @@ lua << EOF
             },
         },
     })
-    vim.api.nvim_buf_set_option(0, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-    require('lspconfig').tsserver.setup {
-        on_attach = require'completion'.on_attach
-    }
+
+    local nvim_lsp = require'lspconfig'
+    local on_attach = function(client, bufnr)
+      local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+      local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+      buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+      require'completion'.on_attach();
+    end
+
+    local servers = { 'tsserver' }
+    for _, lsp in ipairs(servers) do
+      nvim_lsp[lsp].setup {
+        on_attach = on_attach,
+        flags = {
+          debounce_text_changes = 150,
+        }
+      }
+    end
 EOF
