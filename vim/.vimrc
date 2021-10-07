@@ -19,8 +19,14 @@ Plug 'kyazdani42/nvim-web-devicons'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
+
 Plug 'neovim/nvim-lspconfig'
-Plug 'nvim-lua/completion-nvim'
+Plug 'hrsh7th/cmp-nvim-lsp'
+Plug 'hrsh7th/cmp-buffer'
+Plug 'hrsh7th/nvim-cmp'
+Plug 'hrsh7th/cmp-vsnip'
+Plug 'hrsh7th/vim-vsnip'
+
 
 call plug#end()
 
@@ -55,7 +61,7 @@ set foldlevelstart=5
 set showtabline=1
 set laststatus=0
 set hlsearch
-set completeopt=menuone,noinsert,noselect
+set completeopt=menu,menuone,noselect
 set timeoutlen=300
 
 hi! EndOfBuffer guifg=bg guibg=bg ctermfg=bg ctermbg=bg
@@ -70,11 +76,6 @@ let g:calendar_monday = 1
 
 autocmd FileType markdown setlocal spell spelllang=en_gb
 autocmd QuickFixCmdPost *grep* cwindow
-
-inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-imap <tab> <Plug>(completion_smart_tab)
-imap <s-tab> <Plug>(completion_smart_s_tab)
 
 lua << EOF
     require'nvim-web-devicons'.setup {
@@ -99,6 +100,7 @@ lua << EOF
     whichkey.register({
         ['<leader>'] = {
             ['c'] = 'which_key_ignore',
+            ['h'] = 'which_key_ignore',
             ['f'] = {
                 name = '+Find',
                 ['b'] = { '<CMD>Telescope buffers<CR>', 'Buffers' },
@@ -106,7 +108,6 @@ lua << EOF
                 ['g'] = { '<CMD>Telescope live_grep<CR>', 'Grep' },
                 ['h'] = { '<CMD>Telescope help_tags<CR>', 'Help tags' },
             },
-            ['h'] = 'which_key_ignore',
             ['i'] = {
                 name = '+Insert',
                 ['d'] = { '<CMD>call GetDate()', 'Date' },
@@ -118,13 +119,48 @@ lua << EOF
                 ['n'] = { '<CMD>set invnumber<CR> <BAR> <CMD>set invrelativenumber<CR>', 'Line Numbers' },
             },
             ['w'] = {
-                name = '+Wiki',
-                ['i'] = { '<CMD><Plug>VimwikiDiaryIndex <space>', '' },
-                ['s'] = { '<CMD><Plug>VimwikiUISelect', '' },
-                ['t'] = { '<CMD><Plug>VimwikiTabIndex', '' },
-                ['i'] = { '<CMD><Plug>VimwikiIndex', '' },
+                name = '+Wiki'
             },
         },
+    })
+
+    local cmp = require'cmp'
+
+    cmp.setup({
+        snippet = {
+            expand = function(args)
+                vim.fn["vsnip#anonymous"](args.body)
+            end,
+        },
+        mapping = {
+            ['<CR>'] = cmp.mapping.confirm {
+                behavior = cmp.ConfirmBehavior.Replace,
+                select = true,
+            },
+            ['<Tab>'] = function(fallback)
+                if vim.fn.pumvisible() == 1 then
+                    vim.fn.feedkeys(vim.api.nvim_replace_termcodes('<C-n>', true, true, true), 'n')
+                elseif luasnip.expand_or_jumpable() then
+                    vim.fn.feedkeys(vim.api.nvim_replace_termcodes('<Plug>luasnip-expand-or-jump', true, true, true), '')
+                else
+                    fallback()
+                end
+            end,
+            ['<S-Tab>'] = function(fallback)
+                if vim.fn.pumvisible() == 1 then
+                    vim.fn.feedkeys(vim.api.nvim_replace_termcodes('<C-p>', true, true, true), 'n')
+                elseif luasnip.jumpable(-1) then
+                    vim.fn.feedkeys(vim.api.nvim_replace_termcodes('<Plug>luasnip-jump-prev', true, true, true), '')
+                else
+                    fallback()
+                end
+            end,
+        },
+        sources = {
+            { name = 'nvim_lsp' },
+            { name = 'vsnip' },
+            { name = 'buffer' },
+        }
     })
 
     local nvim_lsp = require'lspconfig'
@@ -140,14 +176,13 @@ lua << EOF
             }
       })
       vim.o.relativenumber = true
-      buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
-      require'completion'.on_attach();
     end
 
     local servers = { 'tsserver' }
     for _, lsp in ipairs(servers) do
       nvim_lsp[lsp].setup {
         on_attach = on_attach,
+        capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities()),
         flags = {
           debounce_text_changes = 150,
         }
