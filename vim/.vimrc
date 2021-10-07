@@ -98,11 +98,6 @@ lua << EOF
     local whichkey = require'which-key'
     whichkey.register({
         ['<leader>'] = {
-            ['.'] = {
-                name = '+Code',
-                ['.'] = { '<CMD>lua vim.lsp.buf.code_action()<CR>', 'Action' },
-                ['d'] = { '<CMD>lua vim.lsp.buf.hover()<CR>', 'Hover Doc' },
-            },
             ['c'] = 'which_key_ignore',
             ['f'] = {
                 name = '+Find',
@@ -134,8 +129,17 @@ lua << EOF
 
     local nvim_lsp = require'lspconfig'
     local on_attach = function(client, bufnr)
-      local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
-      local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+        local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+        whichkey.register({
+            ['<leader>'] = {
+                ['.'] = {
+                    name = '+Code',
+                    ['.'] = { '<CMD>lua vim.lsp.buf.code_action()<CR>', 'Action' },
+                    ['d'] = { '<CMD>lua vim.lsp.buf.hover()<CR>', 'Hover Doc' },
+                },
+            }
+      })
+      vim.o.relativenumber = true
       buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
       require'completion'.on_attach();
     end
