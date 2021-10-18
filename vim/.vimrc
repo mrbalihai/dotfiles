@@ -16,6 +16,7 @@ Plug 'pangloss/vim-javascript'
 Plug 'leafgarland/typescript-vim'
 Plug 'folke/which-key.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
+Plug 'kyazdani42/nvim-tree.lua'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
@@ -26,6 +27,7 @@ Plug 'hrsh7th/cmp-buffer'
 Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-vsnip'
 Plug 'hrsh7th/vim-vsnip'
+Plug 'folke/lsp-colors.nvim'
 
 
 call plug#end()
@@ -88,10 +90,18 @@ lua << EOF
         vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, true, true), mode, true)
     end
 
-
     require'nvim-web-devicons'.setup {
         default = true;
     }
+
+    require'nvim-tree'.setup()
+    require'lsp-colors'.setup {
+        -- Error = "#db4b4b",
+        -- Warning = "#e0af68",
+        -- Information = "#0db9d7",
+        -- Hint = "#10B981"
+    }
+
     require('telescope').setup {
         extensions = {
             fzf = {
@@ -111,13 +121,16 @@ lua << EOF
     whichkey.register({
         ['<leader>'] = {
             ['c'] = 'which_key_ignore',
-            ['h'] = 'which_key_ignore',
+            ['h'] = {
+                name = '+Git'
+            },
             ['f'] = {
                 name = '+Find',
                 ['b'] = { '<CMD>Telescope buffers<CR>', 'Buffers' },
                 ['f'] = { '<CMD>Telescope find_files<CR>', 'Files' },
                 ['g'] = { '<CMD>Telescope live_grep<CR>', 'Grep' },
                 ['h'] = { '<CMD>Telescope help_tags<CR>', 'Help tags' },
+                ['t'] = { '<CMD>NvimTreeToggle<CR>', 'Tree' },
             },
             ['i'] = {
                 name = '+Insert',
@@ -183,11 +196,29 @@ lua << EOF
                 ['.'] = {
                     name = '+Code',
                     ['.'] = { '<CMD>lua vim.lsp.buf.code_action()<CR>', 'Action' },
-                    ['d'] = { '<CMD>lua vim.lsp.buf.hover()<CR>', 'Hover Doc' },
+                    ['k'] = { '<CMD>lua vim.lsp.buf.hover()<CR>', 'Show Hover Doc' },
+                    ['d'] = { '<CMD>lua vim.lsp.buf.definition()<CR>', 'Go To Definition' },
+                    ['s'] = { '<CMD>lua require("telescope.builtin").lsp_dynamic_workspace_symbols()<CR>', 'Search Symbols' },
+                    ['n'] = { '<CMD>lua vim.lsp.diagnostic.goto_next()<CR>', 'Go To Next Diagnostic' },
+                    ['p'] = { '<CMD>lua vim.lsp.diagnostic.goto_prev()<CR>', 'Go To Previous Diagnostic' },
+                    ['f'] = { '<CMD>lua vim.lsp.buf.formatting()<CR>', 'Format' }
                 },
             }
       })
       vim.o.relativenumber = true
+      vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
+        virtual_text = false,
+        underline = true,
+        signs = true
+      })
+      vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help, {
+        focusable = false,
+      })
+      vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
+        focusable = false
+      })
+      vim.api.nvim_command('autocmd CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics({ focusable = false })')
+      vim.api.nvim_command('autocmd CursorHoldI * silent! lua vim.lsp.buf.signature_help()')
     end
 
     local servers = { 'tsserver' }
@@ -200,4 +231,11 @@ lua << EOF
         }
       }
     end
+
+    local signs = { Error = " ", Warning = " ", Hint = " ", Information = " " }
+    for type, icon in pairs(signs) do
+      local hl = "LspDiagnosticsSign" .. type
+      vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
+    end
+
 EOF
