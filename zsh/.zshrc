@@ -3,13 +3,14 @@ export ZSH="${HOME}/.oh-my-zsh"
 export EDITOR=vim
 alias vim="nvim"
 alias vi="nvim"
+alias vimdiff="nvim -d"
 
 # Install oh-my-zsh if it doesn't exist
 [ ! -d "${ZSH}" ] && \
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 ZSH_THEME="robbyrussell"
-plugins=(git fzf)
+plugins=(git fzf aws timewarrior)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -31,3 +32,4 @@ if command -v tmux >/dev/null 2>&1; then
     # if not inside a tmux session, and if no session is started, start a new session
     [ -z "${TMUX}" ] && (tmux attach || tmux) >/dev/null 2>&1
 fi
+export PATH="/usr/local/opt/openjdk/bin:$PATH"

@@ -10,7 +10,6 @@ Plug 'tools-life/taskwiki'
 Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-vinegar'
 Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-flagship'
 Plug 'airblade/vim-gitgutter'
 Plug 'pangloss/vim-javascript'
 Plug 'leafgarland/typescript-vim'
@@ -20,7 +19,7 @@ Plug 'kyazdani42/nvim-tree.lua'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
-
+Plug 'nvim-lualine/lualine.nvim'
 Plug 'neovim/nvim-lspconfig'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
@@ -28,7 +27,7 @@ Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-vsnip'
 Plug 'hrsh7th/vim-vsnip'
 Plug 'folke/lsp-colors.nvim'
-
+Plug 'jparise/vim-graphql'
 
 call plug#end()
 
@@ -52,7 +51,9 @@ set expandtab
 set hidden
 set nobackup
 set nowritebackup
-set cmdheight=2
+set noshowmode
+set noshowcmd
+set cmdheight=1
 set updatetime=300
 set shortmess+=c
 set directory=$HOME/.vim/swapfiles//
@@ -60,23 +61,34 @@ set guioptions-=m "menu bar
 set guioptions-=T "toolbar
 set guioptions-=r "scrollbar
 set foldlevelstart=5
-set showtabline=1
-set laststatus=0
 set hlsearch
 set completeopt=menu,menuone,noselect
 set timeoutlen=300
+set number
+set relativenumber
 
 hi! EndOfBuffer guifg=bg guibg=bg ctermfg=bg ctermbg=bg
 hi! WhichKeyFloat ctermbg=0 guibg=#073642
 hi! Pmenu ctermfg=NONE ctermbg=0 cterm=NONE guifg=NONE guibg=#073642 gui=NONE
+hi! StatusLine ctermbg=fg ctermfg=bg guibg=fg guifg=bg
 
 let g:gitgutter_override_sign_column_highlight = 0
 let mapleader = " "
 let maplocalleader = ","
 let g:vimwiki_list = [{'path': '~/Wiki/'}]
-let g:tablabel = "%N%{flagship#tabmodified()} %{flagship#tabcwds('shorten',',')}"
 let g:calendar_monday = 1
 
+function! Scratch()
+    split
+    noswapfile hide enew
+    setlocal buftype=nofile
+    setlocal bufhidden=hide
+    "setlocal nobuflisted
+    "lcd ~
+    file scratch
+endfunction
+
+command Exec call Scratch() | vnew | set filetype=sh | set buftype=nofle | set bufhidden=hide | read !sh #
 autocmd FileType markdown setlocal spell spelllang=en_gb
 autocmd QuickFixCmdPost *grep* cwindow
 
@@ -93,7 +105,12 @@ lua << EOF
     require'nvim-web-devicons'.setup {
         default = true;
     }
-
+    require'lualine'.setup{
+      options = {
+        section_separators = { left = '', right = ''},
+        component_separators = { left = '', right = ''}
+      }
+    }
     require'nvim-tree'.setup()
     require'lsp-colors'.setup {
         -- Error = "#db4b4b",
@@ -136,6 +153,7 @@ lua << EOF
                 name = '+Insert',
                 ['d'] = { '<CMD>call GetDate()', 'Date' },
             },
+            ['e'] = { '<CMD>Exec<CR>', 'Exec' },
             ['t'] = {
                 name = '+Toggle',
                 ['c'] = { '<CMD>execute "set colorcolumn=" . (&colorcolumn == "" ? "80" : "")<CR>', 'Colour Column' },
@@ -205,6 +223,7 @@ lua << EOF
                 },
             }
       })
+      vim.o.number = true
       vim.o.relativenumber = true
       vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
         virtual_text = false,
