@@ -5,3 +5,8 @@ vim/.vim/view
 vim/.vim/.netrwhist
 
 mutt/.mutt/user.muttrc
+config/.config/zsh/secrets.zsh
+local/.local/share/containers
+local/.local/share/nvim
+config/.config/zsh/.zcompdump
+config/.config/zsh/.zsh_history
