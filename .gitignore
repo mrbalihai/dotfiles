@@ -11,3 +11,5 @@ local/.local/share/nvim
 config/.config/zsh/.zcompdump
 config/.config/zsh/.zsh_history
 config/.config/tmux/plugins/
+config/.config/nvim/autoload/
+config/.config/nvim/plugged/

@@ -40,8 +40,8 @@ autoload -Uz cursor_mode; cursor_mode
     git clone https://github.com/tmux-plugins/tpm ${TMUX_PLUGIN_MANAGER_PATH}/tpm && \
     ${TMUX_PLUGIN_MANAGER_PATH}/tpm/bin/install_plugins
 
-[ ! -f "${HOME}/.vim/autoload/plug.vim" ] && \
-    curl -fLo ${HOME}/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim && \
+[ ! -f "${XDG_CONFIG_HOME}/nvim/autoload/plug.vim" ] && \
+    curl -fLo ${XDG_CONFIG_HOME}/nvim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim && \
     vim +PlugInstall +qall
 
 source ~/.config/zsh/secrets.zsh
