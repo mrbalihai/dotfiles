@@ -1,10 +1,5 @@
 fpath=($DOTFILES/zsh/plugins $fpath)
 
-if command -v tmux >/dev/null 2>&1; then
-    # if not inside a tmux session, and if no session is started, start a new session
-    [ -z "${TMUX}" ] && (tmux attach || tmux) >/dev/null 2>&1
-fi
-
 setopt AUTO_CD # Go to folder path without using cd.
 setopt AUTO_PUSHD # Push the old directory onto the stack on cd.
 setopt PUSHD_IGNORE_DUPS # Do not store duplicates in the stack.
@@ -41,9 +36,9 @@ autoload -Uz cursor_mode; cursor_mode
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 
 # Install plugin managers && plugins for vim and tmux if they don't exist
-[ ! -d "${HOME}/.tmux/plugins/tpm" ] && \
-    git clone https://github.com/tmux-plugins/tpm ${HOME}/.tmux/plugins/tpm && \
-    ~/.tmux/plugins/tpm/bin/install_plugins
+[ ! -d "${TMUX_PLUGIN_MANAGER_PATH}/tpm" ] && \
+    git clone https://github.com/tmux-plugins/tpm ${TMUX_PLUGIN_MANAGER_PATH}/tpm && \
+    ${TMUX_PLUGIN_MANAGER_PATH}/tpm/bin/install_plugins
 
 [ ! -f "${HOME}/.vim/autoload/plug.vim" ] && \
     curl -fLo ${HOME}/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim && \
@@ -56,6 +51,13 @@ alias vi="nvim"
 alias vimdiff="nvim -d"
 alias kp="keepassxc-cli open"
 alias irssi="irssi --home ${HOME}/.config/irssi -c ${IRC_SERVER} -w ${IRC_PASSWORD}"
+alias tmux="tmux -f ${XDG_CONFIG_HOME}/tmux/tmux.conf"
 
 unset IRC_SERVER
 unset IRC_PASSWORD
+
+if command -v tmux >/dev/null 2>&1; then
+    # if not inside a tmux session, and if no session is started, start a new session
+    [ -z "${TMUX}" ] && (tmux attach || tmux) >/dev/null 2>&1
+fi
+

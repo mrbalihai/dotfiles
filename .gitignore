@@ -10,3 +10,4 @@ local/.local/share/containers
 local/.local/share/nvim
 config/.config/zsh/.zcompdump
 config/.config/zsh/.zsh_history
+config/.config/tmux/plugins/
