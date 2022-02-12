@@ -1,6 +1,10 @@
 call plug#begin('~/.config/nvim/plugged')
-Plug 'altercation/vim-colors-solarized'
-Plug 'overcache/NeoSolarized'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'lukas-reineke/indent-blankline.nvim'
+Plug 'ishan9299/nvim-solarized-lua'
+Plug 'ishan9299/modus-theme-vim'
+Plug 'Mofiqul/vscode.nvim'
+
 Plug 'ledger/vim-ledger'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'mattn/calendar-vim'
@@ -8,7 +12,6 @@ Plug 'junegunn/goyo.vim'
 Plug 'vimwiki/vimwiki'
 Plug 'tools-life/taskwiki'
 Plug 'tpope/vim-speeddating'
-Plug 'tpope/vim-vinegar'
 Plug 'tpope/vim-fugitive'
 Plug 'airblade/vim-gitgutter'
 Plug 'pangloss/vim-javascript'
@@ -25,10 +28,11 @@ Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
 Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-vsnip'
+Plug 'folke/trouble.nvim'
 Plug 'hrsh7th/vim-vsnip'
 Plug 'folke/lsp-colors.nvim'
 Plug 'jparise/vim-graphql'
-Plug 'phaazon/hop.nvim'
+Plug 'ggandor/lightspeed.nvim'
 Plug 'chrisbra/csv.vim'
 
 call plug#end()
@@ -43,9 +47,12 @@ function! GetDate()
 endfunction
 
 set termguicolors
-colorscheme NeoSolarized
+" colorscheme solarized
+let g:vscode_style = "dark"
+let g:vscode_italic_comment = 1
+colorscheme vscode
 set bg=dark
-set listchars=tab:>-,trail:~,extends:>,precedes:<
+set listchars=tab:>-,trail:~,extends:>,precedes:<,space:⋅
 set list
 set tabstop=4
 set shiftwidth=4
@@ -70,14 +77,15 @@ set number
 set relativenumber
 set clipboard=unnamed
 set diffopt+=vertical
-tnoremap <Esc> <C-\><C-n>
+tnoremap <C-]> <C-\><C-n>
+map <C-n> :NvimTreeToggle<CR>
 " set signcolumn=yes:2
 
-hi! EndOfBuffer guifg=bg guibg=bg ctermfg=bg ctermbg=bg
-hi! WhichKeyFloat ctermbg=0 guibg=#073642
-hi! Pmenu ctermfg=NONE ctermbg=0 cterm=NONE guifg=NONE guibg=#073642 gui=NONE
-hi! StatusLine ctermbg=fg ctermfg=bg guibg=fg guifg=bg
-hi! MsgArea guifg=fg guibg=#073642
+" hi! EndOfBuffer guifg=bg guibg=bg ctermfg=bg ctermbg=bg
+" hi! WhichKeyFloat ctermbg=0 guibg=#073642
+" hi! Pmenu ctermfg=NONE ctermbg=0 cterm=NONE guifg=NONE guibg=#073642 gui=NONE
+" hi! StatusLine ctermbg=fg ctermfg=bg guibg=fg guifg=bg
+" hi! MsgArea guifg=fg guibg=#073642
 
 let g:gitgutter_override_sign_column_highlight = 0
 let mapleader = " "
@@ -91,6 +99,12 @@ command FormatJson set filetype=json | %!python -m json.tool
 autocmd FileType markdown setlocal spell spelllang=en_gb
 autocmd QuickFixCmdPost *grep* cwindow
 
+set foldmethod=expr
+set foldexpr=nvim_treesitter#foldexpr()
+set nofoldenable
+
+highlight IndentBlanklineIndent1 guifg=#333333 gui=nocombine
+
 lua << EOF
   local has_words_before = function()
     local line, col = unpack(vim.api.nvim_win_get_cursor(0))
@@ -100,8 +114,12 @@ lua << EOF
   local feedkey = function(key, mode)
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, true, true), mode, true)
   end
+  require("indent_blankline").setup {
+    space_char_blankline = " ",
+    char_highlight_list = { "IndentBlanklineIndent1" },
+    space_char_highlight_list = { "IndentBlanklineIndent1" },
+  }
 
-  require'hop'.setup()
   require'nvim-web-devicons'.setup {
     default = true;
   }
@@ -113,6 +131,7 @@ lua << EOF
   }
   require'nvim-tree'.setup()
   require'lsp-colors'.setup { }
+  require'trouble'.setup { }
 
   require('telescope').setup {
     extensions = {
@@ -235,7 +254,7 @@ lua << EOF
     vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
       focusable = false
     })
-    vim.api.nvim_command('autocmd CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics({ focusable = false })')
+    vim.api.nvim_command('autocmd CursorHold * lua vim.diagnostic.open_float(0, { focusable = false, scope = "line", border = "single" })')
     vim.api.nvim_command('autocmd CursorHoldI * silent! lua vim.lsp.buf.signature_help()')
 
   end
@@ -250,6 +269,7 @@ lua << EOF
       }
     }
   end
+
 
   local signs = { Error = " ", Warn = " ", Hint = " ", Info = " " }
   for type, icon in pairs(signs) do
