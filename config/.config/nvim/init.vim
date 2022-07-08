@@ -5,6 +5,7 @@ Plug 'ishan9299/nvim-solarized-lua'
 Plug 'ishan9299/modus-theme-vim'
 Plug 'Mofiqul/vscode.nvim'
 
+Plug 'mracos/mermaid.vim'
 Plug 'ledger/vim-ledger'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'mattn/calendar-vim'
@@ -34,6 +35,8 @@ Plug 'folke/lsp-colors.nvim'
 Plug 'jparise/vim-graphql'
 Plug 'ggandor/lightspeed.nvim'
 Plug 'chrisbra/csv.vim'
+Plug 'scr1pt0r/crease.vim'
+Plug 'lepture/vim-velocity'
 
 call plug#end()
 
@@ -95,15 +98,84 @@ let g:calendar_monday = 1
 
 command Windiff windo set diff | windo set scrollbind
 command Exec vnew | set filetype=sh | setlocal buftype=nofile | setlocal bufhidden=hide | read !sh #
-command FormatJson set filetype=json | %!python -m json.tool
+command FormatJson set filetype=json | %!python3 -m json.tool
 autocmd FileType markdown setlocal spell spelllang=en_gb
 autocmd QuickFixCmdPost *grep* cwindow
+au BufNewFile,BufRead *.vtl set ft=velocity
 
 set foldmethod=expr
 set foldexpr=nvim_treesitter#foldexpr()
 set nofoldenable
 
 highlight IndentBlanklineIndent1 guifg=#333333 gui=nocombine
+
+set foldcolumn=0
+set foldlevelstart=0
+set foldmarker=\ {{{,\ }}}
+
+" 'space' is fold char ↓
+set fillchars=fold:\ 
+
+function! FoldIsCommented()  " {{{
+  " 2020-09-12: Converted to lua for adequate performance
+  return luaeval("require('fold').foldIsCommented()")
+endfunction  " }}}
+
+function! IsMod() " {{{
+  if exists('g:loaded_gitgutter')
+    return gitgutter#fold#is_changed() ? g:modified_label  : ' '
+  else
+    return ''
+  endif
+endfunction " }}}
+
+function! CreaseIndent() abort    " {{{
+  let fs = nextnonblank(v:foldstart)    
+  let line = substitute(getline(fs), '\t', repeat(' ', &tabstop), 'g')  
+  let foldLevelStr = repeat(' ', match(line,'\S'))  
+  return foldLevelStr    
+endfunction    " }}}
+" }}}
+
+function! CountFoldText() abort   " {{{
+  let foldCnt = luaeval("require('fold').countChildFolds()")
+  if l:foldCnt < 0 
+    return '' 
+  endif
+  return l:foldCnt == 0 ? '' : '' . l:foldCnt . " " . g:fold_label . ' · '
+endfunction   " }}}
+
+function! Cmmtd() abort " {{{
+  return FoldIsCommented() ? g:commented_label : ''
+endfunction " }}}
+
+function! FoldTxt() abort " {{{
+  return trim(substitute(
+	\ getline(v:foldstart),
+	\ '\V\C'
+	\ . join(split(&commentstring, '%s'), '\|') . '\|'
+	\ . join(split(&foldmarker, ','), '\d\?\|') . '\|'
+	\ . join(g:foldtext_stop_words, '\|') . '\|',
+	\ '',
+	\ 'g'
+	\ ))
+endfunction " }}}
+" }}}
+
+let g:fold_label = ' '
+let g:commented_label = ' '
+let g:lines_label = 'lines'
+let g:modified_label = ' ' " alt : ' '
+
+let g:foldtext_stop_words = [
+      \ '\^function',
+      \ '!',
+      \ 'abort',
+      \ ]
+
+let g:crease_foldtext = {  
+      \ 'default': '%{CreaseIndent()}%{FoldTxt()} %{IsMod()} %{Cmmtd()} %= %{CountFoldText()}%l '.g:lines_label.' %f%f%f%f',
+      \}
 
 lua << EOF
   local has_words_before = function()
@@ -127,6 +199,9 @@ lua << EOF
     options = {
       section_separators = { left = '', right = ''},
       component_separators = { left = '', right = ''}
+    },
+    sections = {
+      lualine_c = { {'filename', path = 1, shorting_target = 20 } },
     }
   }
   require'nvim-tree'.setup()

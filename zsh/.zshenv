@@ -1,6 +1,5 @@
-export PATH=${HOME}/.local/bin:/usr/local/bin:${PATH}
+export PATH=${HOME}/.local/bin:/usr/local/bin:/usr/local/opt/libpq/bin:${PATH}
 
-export ZSH="${HOME}/.oh-my-zsh"
 export EDITOR="nvim"
 export VISUAL="nvim"
 
@@ -15,4 +14,7 @@ export HISTFILE="${ZDOTDIR}/.zhistory"
 export HISTSIZE=10000
 export SAVEHIST=10000
 
-export NVM_DIR="${HOME}/.nvm"
+export NVM_DIR="${XDG_CONFIG_HOME}/nvm"
+export RUSTUP_HOME="${XDG_CONFIG_HOME}/rustup"
+export CARGO_HOME="${XDG_CONFIG_HOME}/cargo"
+source "${CARGO_HOME}/env"
