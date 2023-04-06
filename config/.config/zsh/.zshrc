@@ -28,6 +28,7 @@ source ${ZSH_PLUGINS}/completion.zsh
 source ${ZSH_PLUGINS}/fzf_completion.zsh
 source ${ZSH_PLUGINS}/fzf_key_bindings.zsh
 source ${ZSH_PLUGINS}/cursor_mode.zsh
+source ${ZSH_PLUGINS}/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh
 source ${ZSH_PLUGINS}/prompt.zsh
 
 autoload -U compinit; compinit
@@ -60,4 +61,20 @@ if command -v tmux >/dev/null 2>&1; then
     # if not inside a tmux session, and if no session is started, start a new session
     [ -z "${TMUX}" ] && (tmux attach || tmux) >/dev/null 2>&1
 fi
+
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/usr/local/Caskroom/miniconda/base/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/usr/local/Caskroom/miniconda/base/etc/profile.d/conda.sh" ]; then
+        . "/usr/local/Caskroom/miniconda/base/etc/profile.d/conda.sh"
+    else
+        export PATH="/usr/local/Caskroom/miniconda/base/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
 
