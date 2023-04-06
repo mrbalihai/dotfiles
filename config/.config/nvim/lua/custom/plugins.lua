@@ -1,63 +1,97 @@
-return function(use)
-  use({ "github/copilot.vim" })
-  use({ "nvim-lua/plenary.nvim" })
-  use({ "MunifTanjim/nui.nvim" })
-  use({ "dpayne/CodeGPT.nvim" })
-  use({ "Mofiqul/vscode.nvim" })
-  use({ "tpope/vim-vinegar" })
-  use({
-    "folke/which-key.nvim",
-      config = function()
-        local wk = require("which-key")
-        wk.setup({})
-        wk.register({
-          ['<leader>'] = {
-            ['c'] = 'which_key_ignore',
-            ['h'] = {
-              name = '+Git'
-            },
-            ['f'] = {
-              name = '+Find',
-              ['b'] = { '<CMD>Telescope buffers<CR>', 'Buffers' },
-              ['f'] = { '<CMD>Telescope find_files<CR>', 'Files' },
-              ['g'] = { '<CMD>Telescope live_grep<CR>', 'Grep' },
-              ['h'] = { '<CMD>Telescope help_tags<CR>', 'Help tags' },
-              ['t'] = { '<CMD>NvimTreeToggle<CR>', 'Tree' },
-            },
-            ['i'] = {
-              name = '+Insert',
-              ['d'] = { '<CMD>call GetDate()', 'Date' },
-            },
-            ['e'] = { '<CMD>Exec<CR>', 'Exec' },
-            ['t'] = {
-              name = '+Toggle',
-              ['c'] = { '<CMD>execute "set colorcolumn=" . (&colorcolumn == "" ? "80" : "")<CR>', 'Colour Column' },
-              ['d'] = { '<CMD>Windiff<CR>', 'Diff' },
-              ['h'] = { '<CMD>noh<CR>', 'Clear Search Highlight' },
-              ['j'] = { '<CMD>FormatJson<CR>', 'Format Json' },
-              ['n'] = { '<CMD>set invnumber<CR> <BAR> <CMD>set invrelativenumber<CR>', 'Line Numbers' },
-            },
-            ['w'] = {
-                name = '+Wiki'
-            },
-            ['.'] = {
-              name = '+Code',
-              ['.'] = { '<CMD>lua vim.lsp.buf.code_action()<CR>', 'Action' },
-              ['k'] = { '<CMD>lua vim.lsp.buf.hover()<CR>', 'Show Hover Doc' },
-              ['d'] = { '<CMD>lua vim.lsp.buf.definition()<CR>', 'Go To Definition' },
-              ['s'] = { '<CMD>lua require("telescope.builtin").lsp_dynamic_workspace_symbols()<CR>', 'Search Symbols' },
-              ['n'] = { '<CMD>lua vim.lsp.diagnostic.goto_next()<CR>', 'Go To Next Diagnostic' },
-              ['p'] = { '<CMD>lua vim.lsp.diagnostic.goto_prev()<CR>', 'Go To Previous Diagnostic' },
-              ['f'] = { '<CMD>lua vim.lsp.buf.format { async = true }<CR>', 'Format' }
-            },
-          },
-        })
-      end
-  })
-  use({
-    "nvim-tree/nvim-tree.lua",
-    requires = {
-      'nvim-tree/nvim-web-devicons',
-    }
-  })
+-- You can add your own plugins here or in other files in this directory!
+--  I promise not to create any merge conflicts in this directory :)
+--
+-- See the kickstart.nvim README for more information
+vim.o.number = true
+vim.o.relativenumber = true
+vim.o.timeoutlen = 300
+vim.o.updatetime = 300
+vim.o.clipboard = 'unnamed'
+vim.o.hlsearch = true
+vim.opt.listchars:append({ trail =  '~', space = '⋅' })
+vim.opt.list = true
+vim.opt.mouse = nil
+
+local signs = { Error = " ", Warn = " ", Hint = " ", Info = " " }
+for type, icon in pairs(signs) do
+  local hl = "DiagnosticSign" .. type
+  vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
 end
+
+return {
+  { "nvim-lua/plenary.nvim" },
+  { "MunifTanjim/nui.nvim" },
+  { "rcarriga/nvim-notify" },
+
+  {
+    "zbirenbaum/copilot.lua",
+    cmd = "Copilot",
+    event = "InsertEnter",
+    config = function()
+      require("copilot").setup({
+        suggestion = { enabled = false },
+        panel = { enabled = false },
+      })
+    end,
+  },
+  { "nvim-tree/nvim-web-devicons" },
+  {
+    "folke/trouble.nvim",
+    requires = "nvim-tree/nvim-web-devicons",
+    config = function()
+      require("trouble").setup({
+        signs = {
+          error = signs.Error,
+          warning = signs.Warn,
+          hint = signs.Hint,
+          information = signs.Info,
+        }
+
+      })
+    end
+  },
+  {
+    "jackMort/ChatGPT.nvim",
+    config = function()
+      require("chatgpt").setup({
+      })
+    end,
+    requires = {
+      "MunifTanjim/nui.nvim",
+      "nvim-lua/plenary.nvim",
+      "nvim-telescope/telescope.nvim"
+    }
+  },
+  {
+    "zbirenbaum/copilot-cmp",
+    after = { "copilot.lua" },
+    config = function ()
+      require("copilot_cmp").setup()
+    end
+  },
+  {
+    "nvim-tree/nvim-tree.lua",
+    config = function()
+      require('nvim-tree').setup({
+        filters = {
+          dotfiles = false
+        }
+      })
+      vim.keymap.set('n', '<C-n>', require('nvim-tree.api').tree.toggle)
+    end
+  },
+  {
+    "Mofiqul/vscode.nvim",
+    config = function()
+      require("vscode").setup({
+        italic_comments = true,
+      })
+      require('vscode').load()
+      require('lualine').setup({
+          options = {
+              theme = 'vscode',
+          },
+      })
+    end
+  }
+}
