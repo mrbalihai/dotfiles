@@ -22,19 +22,15 @@ return {
   { "nvim-lua/plenary.nvim" },
   { "MunifTanjim/nui.nvim" },
   { "rcarriga/nvim-notify" },
-
+  { "dpayne/CodeGPT.nvim" },
   {
     "zbirenbaum/copilot.lua",
     cmd = "Copilot",
     event = "InsertEnter",
     config = function()
-      require("copilot").setup({
-        suggestion = { enabled = false },
-        panel = { enabled = false },
-      })
+      require("copilot").setup()
     end,
   },
-  { "nvim-tree/nvim-web-devicons" },
   {
     "folke/trouble.nvim",
     requires = "nvim-tree/nvim-web-devicons",
@@ -49,18 +45,6 @@ return {
 
       })
     end
-  },
-  {
-    "jackMort/ChatGPT.nvim",
-    config = function()
-      require("chatgpt").setup({
-      })
-    end,
-    requires = {
-      "MunifTanjim/nui.nvim",
-      "nvim-lua/plenary.nvim",
-      "nvim-telescope/telescope.nvim"
-    }
   },
   {
     "zbirenbaum/copilot-cmp",
