@@ -6,7 +6,7 @@ zstyle ':vcs_info:git:*' formats '%F{244}(%b)%f'
 zstyle ':vcs_info:*' enable git
 
 PROMPT='%(?..%F{red}!)%f %B%F{247}%1~%f%b $vcs_info_msg_0_ > '
-RPROMPT='${AWS_PROFILE}'
+RPROMPT='$(nvm current) ${AWS_PROFILE}'
 
 ## Purification
 ## by Matthieu Cneude
