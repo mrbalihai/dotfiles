@@ -14,3 +14,6 @@ config/.config/tmux/plugins/
 config/.config/nvim/autoload/
 config/.config/nvim/plugged/
 packer_compiled.lua
+config/.config/weechat/sec.conf
+local/.local/share
+local/.local/state
