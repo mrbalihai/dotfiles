@@ -36,7 +36,7 @@ autoload -Uz cursor_mode; cursor_mode
 
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 
-# Install plugin managers && plugins for vim and tmux if they don't exist
+# Install plugin managers && plugins for tmux if they don't exist
 [ ! -d "${TMUX_PLUGIN_MANAGER_PATH}/tpm" ] && \
     git clone https://github.com/tmux-plugins/tpm ${TMUX_PLUGIN_MANAGER_PATH}/tpm && \
     ${TMUX_PLUGIN_MANAGER_PATH}/tpm/bin/install_plugins
