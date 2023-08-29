@@ -3,6 +3,8 @@
 --
 -- See the kickstart.nvim README for more information
 vim.o.number = true
+vim.o.tabstop = 2
+vim.o.shiftwidt = 2
 vim.o.relativenumber = true
 vim.o.timeoutlen = 300
 vim.o.updatetime = 300
@@ -11,6 +13,14 @@ vim.o.hlsearch = true
 vim.opt.listchars:append({ trail =  '~', space = '⋅' })
 vim.opt.list = true
 vim.opt.mouse = nil
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+vim.opt.foldlevelstart = 20
+
+vim.api.nvim_create_autocmd({ "BufWritePre" }, {
+  pattern = { "*" },
+  command = [[%s/\s\+$//e]],
+})
 
 local signs = { Error = " ", Warn = " ", Hint = " ", Info = " " }
 for type, icon in pairs(signs) do
@@ -25,7 +35,13 @@ return {
   { "rcarriga/nvim-notify" },
   { "nvim-tree/nvim-web-devicons" },
   { "dpayne/CodeGPT.nvim" },
-  { "tjdevries/colorbuddy.nvim" },
+  {
+    "tjdevries/colorbuddy.nvim",
+    config = function()
+      require('colorbuddy').setup()
+    end
+  },
+  { "tikhomirov/vim-glsl" },
   {
     "folke/trouble.nvim",
     requires = "nvim-tree/nvim-web-devicons",
@@ -37,12 +53,12 @@ return {
           hint = signs.Hint,
           information = signs.Info,
         },
-        mode = "document_diagnostics",
-        auto_open = true
+        auto_open = true,
+        auto_close = true
       })
     end
   },
- {
+  {
     "nvim-tree/nvim-tree.lua",
     config = function()
       require('nvim-tree').setup({
@@ -67,16 +83,16 @@ return {
        })
     end
   },
-  -- {
-  --   "svrana/neosolarized.nvim",
-  --   requires = "tjdevries/colorbuddy.nvim",
-  --   config = function()
-  --     require('neosolarized').setup({
-  --       comment_italics = true,
-  --       background_set = false,
-  --     })
-  --   end
-  -- },
+  --{
+  --  "svrana/neosolarized.nvim",
+  --  requires = "tjdevries/colorbuddy.nvim",
+  --  config = function()
+  --    require('neosolarized').setup({
+  --      comment_italics = true,
+  --      background_set = true,
+  --    })
+  --  end
+  --},
 
 
 }
