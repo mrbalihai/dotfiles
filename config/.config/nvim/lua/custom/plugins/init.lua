@@ -22,13 +22,14 @@ vim.api.nvim_create_autocmd({ "BufWritePre" }, {
   command = [[%s/\s\+$//e]],
 })
 
-local signs = { Error = " ", Warn = " ", Hint = " ", Info = " " }
+local signs = { Error = "", Warn = " ", Hint = "", Info = " " }
 for type, icon in pairs(signs) do
   local hl = "DiagnosticSign" .. type
   vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
 end
 
 return {
+  { "onsails/lspkind.nvim" },
   { "jparise/vim-graphql" },
   { "nvim-lua/plenary.nvim" },
   { "MunifTanjim/nui.nvim" },
@@ -47,12 +48,6 @@ return {
     requires = "nvim-tree/nvim-web-devicons",
     config = function()
       require("trouble").setup({
-        signs = {
-          error = signs.Error,
-          warning = signs.Warn,
-          hint = signs.Hint,
-          information = signs.Info,
-        },
         auto_open = true,
         auto_close = true
       })
