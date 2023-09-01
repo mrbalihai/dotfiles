@@ -36,13 +36,13 @@ return {
   { "rcarriga/nvim-notify" },
   { "nvim-tree/nvim-web-devicons" },
   { "dpayne/CodeGPT.nvim" },
+  { "tikhomirov/vim-glsl" },
   {
     "tjdevries/colorbuddy.nvim",
     config = function()
       require('colorbuddy').setup()
     end
   },
-  { "tikhomirov/vim-glsl" },
   {
     "folke/trouble.nvim",
     requires = "nvim-tree/nvim-web-devicons",
@@ -61,7 +61,7 @@ return {
           dotfiles = false
         }
       })
-      vim.keymap.set('n', '<C-n>', require('nvim-tree.api').tree.toggle)
+      vim.keymap.set('n', '<leader>n', require('nvim-tree.api').tree.toggle, { desc = 'Toggle File Explorer' })
     end
   },
   {
