@@ -16,11 +16,17 @@ vim.opt.mouse = nil
 vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
 vim.opt.foldlevelstart = 20
+vim.opt.colorcolumn = "120"
 
 vim.api.nvim_create_autocmd({ "BufWritePre" }, {
   pattern = { "*" },
   command = [[%s/\s\+$//e]],
 })
+
+vim.keymap.set('n', '<leader>gs', require('telescope.builtin').git_status, { desc = '[G]it [S]tatus' })
+vim.keymap.set('n', '<leader>gc', require('telescope.builtin').git_commits, { desc = '[G]it [C]ommits' })
+vim.keymap.set('n', '<leader>gbc', require('telescope.builtin').git_bcommits, { desc = '[G]it [B]uffer [C]ommits' })
+vim.keymap.set('n', '<leader>fj', ":set filetype=json | % !jq .<CR>", { desc = '[F]ormat buffer as [J]SON' })
 
 local signs = { Error = "", Warn = " ", Hint = "", Info = " " }
 for type, icon in pairs(signs) do
@@ -34,9 +40,38 @@ return {
   { "nvim-lua/plenary.nvim" },
   { "MunifTanjim/nui.nvim" },
   { "rcarriga/nvim-notify" },
-  { "nvim-tree/nvim-web-devicons" },
-  { "dpayne/CodeGPT.nvim" },
   { "tikhomirov/vim-glsl" },
+  {
+      "dpayne/CodeGPT.nvim",
+      dependencies = {
+        'nvim-lua/plenary.nvim',
+        'MunifTanjim/nui.nvim',
+      },
+      config = function()
+          require("codegpt.config")
+      end
+  },
+  {
+    "sbdchd/neoformat",
+  },
+  {
+    "David-Kunz/jester",
+    config = function()
+      require("jester").setup({
+        path_to_jest_run = './node_modules/jest/bin/jest.js'
+      })
+      vim.keymap.set('n', '<leader>jr', require('jester').run, { desc = '[J]est [R]un test under the cursor' })
+      vim.keymap.set('n', '<leader>jf', require('jester').run_file, { desc = 'Run all [J]est tests for the current [F]ile' })
+      vim.keymap.set('n', '<leader>jl', require('jester').run_last, { desc = 'Run the [J]est test that was [L]as run' })
+    end
+  },
+  {
+    "folke/todo-comments.nvim",
+    requires = "nvim-lua/plenary.nvim",
+    config = function()
+      require("todo-comments").setup()
+    end
+  },
   {
     "tjdevries/colorbuddy.nvim",
     config = function()
@@ -49,7 +84,8 @@ return {
     config = function()
       require("trouble").setup({
         auto_open = true,
-        auto_close = true
+        auto_close = true,
+        mode = "document_diagnostics"
       })
     end
   },
@@ -61,7 +97,7 @@ return {
           dotfiles = false
         }
       })
-      vim.keymap.set('n', '<leader>n', require('nvim-tree.api').tree.toggle, { desc = 'Toggle File Explorer' })
+      vim.keymap.set('n', '<leader>n', function () require('nvim-tree.api').tree.toggle { find_file = true, focus = true} end, { desc = 'Toggle File Explorer' })
     end
   },
   {
