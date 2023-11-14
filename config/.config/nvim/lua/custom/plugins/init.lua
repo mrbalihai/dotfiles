@@ -41,15 +41,17 @@ return {
   { "MunifTanjim/nui.nvim" },
   { "rcarriga/nvim-notify" },
   { "tikhomirov/vim-glsl" },
+  { dir = "~/Workspace/cmp-hledger" },
+  { "cbarrete/tree-sitter-ledger" },
   {
-      "dpayne/CodeGPT.nvim",
-      dependencies = {
-        'nvim-lua/plenary.nvim',
-        'MunifTanjim/nui.nvim',
-      },
-      config = function()
-          require("codegpt.config")
-      end
+    "dpayne/CodeGPT.nvim",
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'MunifTanjim/nui.nvim',
+    },
+    config = function()
+      require("codegpt.config")
+    end
   },
   {
     "sbdchd/neoformat",
