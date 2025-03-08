@@ -31,10 +31,11 @@ vim.opt.colorcolumn = "120"
 vim.opt.hlsearch = true
 vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
-vim.o.foldcolumn = "1"
-vim.o.foldlevel = 99
-vim.o.foldlevelstart = 99
-vim.o.foldenable = true
+vim.opt.foldcolumn = "1"
+vim.opt.foldlevel = 99
+vim.opt.foldlevelstart = 99
+vim.opt.foldenable = true
+vim.opt.conceallevel = 2
 
 vim.fn.sign_define("DiagnosticSignError", { text = "", texthl = "DiagnosticSignError", numhl = "" })
 vim.fn.sign_define("DiagnosticSignWarn", { text = "", texthl = "DiagnosticSignWarn", numhl = "" })
@@ -43,13 +44,27 @@ vim.fn.sign_define("DiagnosticSignInfo", { text = "", texthl = "DiagnosticSig
 
 vim.diagnostic.config({ virtual_text = false })
 
+vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { focusable = false })
+
+vim.filetype.add({
+	pattern = {
+		[".*/templates/.*%.yaml"] = "helm",
+	},
+})
+
 vim.api.nvim_create_autocmd("CursorHold", {
 	desc = "Open diagnostic messages on cursor hold",
-	group = vim.api.nvim_create_augroup("highlight-yank", { clear = true }),
+	group = vim.api.nvim_create_augroup("diagnostics-hover", { clear = true }),
 	callback = function()
-		vim.diagnostic.open_float({ border = "rounded" }, { focus = false })
+		for _, winid in pairs(vim.api.nvim_tabpage_list_wins(0)) do
+			if vim.api.nvim_win_get_config(winid).zindex then
+				return
+			end
+		end
+		vim.diagnostic.open_float({ border = "rounded" }, { focusable = false })
 	end,
 })
+
 vim.api.nvim_create_autocmd("TextYankPost", {
 	desc = "Highlight when yanking (copying) text",
 	group = vim.api.nvim_create_augroup("highlight-yank", { clear = true }),
@@ -86,7 +101,7 @@ local keys = {
 	telescope = {
 		{ "<leader>sh", "<cmd>Telescope help_tags<cr>", desc = "[S]earch [H]elp" },
 		{ "<leader>sk", "<cmd>Telescope keymaps<cr>", desc = "[S]earch [K]eymaps" },
-		{ "<leader>sf", "<cmd>Telescope find_files<cr>", desc = "[S]earch [F]iles" },
+		{ "<leader>sf", "<cmd>Telescope find_files find_command=rg,--hidden,--files<cr>", desc = "[S]earch [F]iles" },
 		{ "<leader>ss", "<cmd>Telescope builtin<cr>", desc = "[S]earch [S]elect Telescope" },
 		{ "<leader>sw", "<cmd>Telescope grep_string<cr>", desc = "[S]earch current [W]ord" },
 		{ "<leader>sg", "<cmd>Telescope live_grep<cr>", desc = "[S]earch by [G]rep" },
@@ -141,28 +156,6 @@ local keys = {
 			end,
 			mode = "",
 			desc = "[F]ormat buffer",
-		},
-	},
-	copilot_chat = {
-		{
-			"<leader>cc",
-			function()
-				local input = vim.fn.input("Copilot Chat: ")
-				if input ~= "" then
-					require("CopilotChat").ask(input, { selection = require("CopilotChat.select").buffer })
-				end
-			end,
-			desc = "[C]opilot [C]hat",
-		},
-		{
-			"<leader>ce",
-			function()
-				require("CopilotChat").ask(
-					"Can you explain what the code does in this file in short paragraphs",
-					{ selection = require("CopilotChat.select").buffer }
-				)
-			end,
-			desc = "[C]opilot [E]xplain",
 		},
 	},
 	neotree = {
@@ -221,22 +214,32 @@ local keys = {
 			desc = "[r]eset hunk",
 		},
 	},
+	trouble = {
+		{ "<leader>tt", "<cmd>Trouble diagnostics toggle<cr>", desc = "[T]rouble Diagnostics [t]oggle" },
+	},
+	codecompanion = {
+		{ "<leader>cca", "<cmd>CodeCompanionActions<cr>", desc = "[C]ode [C]ompanion [A]ctions" },
+		{ "<leader>ccc", "<cmd>CodeCompanionChat<cr>", desc = "[C]ode [C]ompanion [C]hat" },
+		{ "<leader>cci", "<cmd>CodeCompanionInline<cr>", desc = "[C]ode [C]ompanion [I]nline" },
+	},
 }
-
-vim.api.nvim_create_autocmd("CursorHold", {
-	desc = "Preview fold",
-	group = vim.api.nvim_create_augroup("preview fold", { clear = true }),
-	callback = function() end,
-})
 
 require("lazy").setup({
 	"tpope/vim-sleuth",
 	"tpope/vim-fugitive",
-	"github/copilot.vim",
 	"jamessan/vim-gnupg",
 	{ "numToStr/Comment.nvim", opts = {} },
 	{ "echasnovski/mini.surround", opts = {} },
 	{ "echasnovski/mini.ai", opts = { n_lines = 500 } },
+	{
+		"folke/trouble.nvim",
+		opts = {
+			modes = {
+				diagnostics = { auto_open = false, auto_close = true },
+			},
+		},
+		keys = keys.trouble,
+	},
 	{
 		"kevinhwang91/nvim-ufo",
 		opts = {
@@ -258,13 +261,12 @@ require("lazy").setup({
 		opts = { signs = false },
 	},
 	{
-		"echasnovski/mini.statusline",
-		opts = {
-			use_icons = true,
-			section_location = function()
-				return "%2l:%-2v"
-			end,
-		},
+		"nvim-lualine/lualine.nvim",
+		event = "VeryLazy",
+		dependencies = { "nvim-tree/nvim-web-devicons" },
+		opts = function()
+			return { options = { theme = "codedark" } }
+		end,
 	},
 	{
 		"lewis6991/gitsigns.nvim",
@@ -298,7 +300,7 @@ require("lazy").setup({
 	{
 		"nvim-telescope/telescope.nvim",
 		event = "VimEnter",
-		branch = "0.1.x",
+		branch = "master",
 		dependencies = {
 			"nvim-lua/plenary.nvim",
 			{
@@ -313,6 +315,14 @@ require("lazy").setup({
 		},
 		config = function()
 			require("telescope").setup({
+				defaults = {
+					path_display = {
+						filename_first = {
+							reverse_directories = true,
+						},
+					},
+				},
+				find_command = { "rg", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" },
 				extensions = {
 					["ui-select"] = {
 						require("telescope.themes").get_dropdown(),
@@ -372,7 +382,7 @@ require("lazy").setup({
 			capabilities = vim.tbl_deep_extend("force", capabilities, require("cmp_nvim_lsp").default_capabilities())
 
 			local servers = {
-				tsserver = {},
+				ts_ls = {},
 				lua_ls = {
 					settings = {
 						Lua = {
@@ -406,13 +416,6 @@ require("lazy").setup({
 		keys = keys.conform,
 		opts = {
 			notify_on_error = false,
-			format_on_save = function(bufnr)
-				local disable_filetypes = { c = true, cpp = true, typescript = true, javascript = true }
-				return {
-					timeout_ms = 500,
-					lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
-				}
-			end,
 			formatters_by_ft = {
 				lua = { "stylua" },
 				javascript = { "prettier" },
@@ -475,7 +478,6 @@ require("lazy").setup({
 					{ name = "nvim_lsp" },
 					{ name = "luasnip" },
 					{ name = "path" },
-					{ name = "orgmode" },
 				},
 			})
 		end,
@@ -519,28 +521,6 @@ require("lazy").setup({
 			require("nvim-treesitter.configs").setup(opts)
 		end,
 	},
-
-	{
-		"CopilotC-Nvim/CopilotChat.nvim",
-		branch = "canary",
-		dependencies = {
-			{ "github/copilot.vim" },
-			{ "nvim-lua/plenary.nvim" },
-		},
-		opts = {
-			context = "buffers",
-		},
-		keys = keys.copilot_chat,
-	},
-	{
-		"nvim-orgmode/orgmode",
-		event = "VeryLazy",
-		ft = { "org" },
-		opts = {
-			org_agenda_files = "/Users/rbollons/Google Drive/My Drive/Journal/**/*",
-			org_default_notes_file = "/Users/rbollons/Google Drive/My Drive/Journal/refile.org",
-		},
-	},
 	{
 		"nvim-neo-tree/neo-tree.nvim",
 		version = "*",
@@ -558,6 +538,7 @@ require("lazy").setup({
 					leave_dirs_open = true,
 				},
 				filtered_items = {
+					visible = true,
 					hide_dotfiles = false,
 				},
 				window = {
@@ -593,15 +574,78 @@ require("lazy").setup({
 			})
 		end,
 	},
+	-- {
+	-- 	"windwp/nvim-autopairs",
+	-- 	event = "InsertEnter",
+	-- 	dependencies = { "hrsh7th/nvim-cmp" },
+	-- 	config = function()
+	-- 		require("nvim-autopairs").setup({})
+	-- 		local cmp_autopairs = require("nvim-autopairs.completion.cmp")
+	-- 		local cmp = require("cmp")
+	-- 		cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
+	-- 	end,
+	-- },
 	{
-		"windwp/nvim-autopairs",
-		event = "InsertEnter",
-		dependencies = { "hrsh7th/nvim-cmp" },
-		config = function()
-			require("nvim-autopairs").setup({})
-			local cmp_autopairs = require("nvim-autopairs.completion.cmp")
-			local cmp = require("cmp")
-			cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
-		end,
+		"MeanderingProgrammer/markdown.nvim",
+		main = "render-markdown",
+		opts = {},
+		name = "render-markdown",
+		dependencies = { "nvim-treesitter/nvim-treesitter", "echasnovski/mini.nvim" },
+	},
+	-- {
+	-- 	"yetone/avante.nvim",
+	-- 	event = "VeryLazy",
+	-- 	lazy = false,
+	-- 	version = false,
+	-- 	opts = {
+	-- 		provider = "copilot",
+	-- 		behaviour = {
+	-- 			auto_suggestions = false,
+	-- 			auto_set_highlight_group = true,
+	-- 			auto_set_keymaps = true,
+	-- 			auto_apply_diff_after_generation = false,
+	-- 			support_paste_from_clipboard = false,
+	-- 		},
+	-- 	},
+	-- 	build = "make",
+	-- 	dependencies = {
+	-- 		"nvim-treesitter/nvim-treesitter",
+	-- 		"stevearc/dressing.nvim",
+	-- 		"nvim-lua/plenary.nvim",
+	-- 		"MunifTanjim/nui.nvim",
+	-- 		"nvim-tree/nvim-web-devicons",
+	-- 		-- "zbirenbaum/copilot.lua",
+	-- 		"echasnovski/mini.pick",
+	-- 		"nvim-telescope/telescope.nvim",
+	-- 		"hrsh7th/nvim-cmp",
+	-- 		"ibhagwan/fzf-lua",
+	-- 		"nvim-tree/nvim-web-devicons",
+	-- 		{
+	-- 			"MeanderingProgrammer/render-markdown.nvim",
+	-- 			opts = {
+	-- 				file_types = { "markdown", "Avante" },
+	-- 			},
+	-- 			ft = { "markdown", "Avante" },
+	-- 		},
+	-- 	},
+	-- },
+	"github/copilot.vim",
+	{
+		"olimorris/codecompanion.nvim",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			"nvim-treesitter/nvim-treesitter",
+		},
+		config = {
+			strategies = {
+				chat = {
+					adapter = "copilot",
+				},
+				inline = {
+					adapter = "ollama",
+				},
+			},
+		},
+		keys = keys.codecompanion,
 	},
 })
