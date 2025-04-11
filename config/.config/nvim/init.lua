@@ -231,9 +231,9 @@ require("lazy").setup({
           },
         },
 
-        layout = 'my_telescope_top',
+        layout = 'my_layout',
         layouts = {
-          my_telescope_top = {
+          my_layout = {
             layout = {
               box = 'horizontal',
               backdrop = true,
@@ -242,8 +242,8 @@ require("lazy").setup({
               border = 'none',
               {
                 box = 'vertical',
-                { win = 'input', height = 1, border = 'rounded', title = '{title} {live} {flags}', title_pos = 'center' },
-                { win = 'list', title = ' Results ', title_pos = 'center', border = 'rounded' },
+                { win = 'input', height = 1, border = 'single', title = '{title} {live} {flags}', title_pos = 'center' },
+                { win = 'list', title = ' Results ', title_pos = 'center', border = 'single' },
               },
               {
                 win = 'preview',
