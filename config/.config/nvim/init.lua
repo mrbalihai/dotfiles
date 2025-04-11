@@ -56,7 +56,7 @@ for _, sign in ipairs(diagnostic_signs) do
 end
 
 vim.diagnostic.config({ virtual_text = false })
-vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { focusable = false })
+vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = "single", focusable = false })
 
 vim.filetype.add({
   pattern = {
@@ -73,7 +73,7 @@ vim.api.nvim_create_autocmd("CursorHold", {
         return
       end
     end
-    vim.diagnostic.open_float({ border = "rounded" }, { focusable = false })
+    vim.diagnostic.open_float({ border = "single" }, { focusable = false })
   end,
 })
 
@@ -109,29 +109,30 @@ local keys = {
     { "<C-j>", "<C-w><C-j>", desc = "Move focus to the lower window" },
     { "<C-k>", "<C-w><C-k>", desc = "Move focus to the upper window" },
     { "<leader>jf", ":set filetype=json | % !jq .<CR>", desc = "[J]SON [F]ormat" },
-    { "<Esc>", function() vim.opt.hlsearch = false end, "Clear search highlight" },
+    { "<Esc>", function() vim.opt.hlsearch = false end, desc = "Clear search highlight" },
   },
   snacks = {
     { "<leader>sf", function() Snacks.picker.smart() end, desc = "[S]earch Files" },
     { "<leader>sg", function() Snacks.picker.grep() end, desc = "[S]earch [G]rep" },
+    { "<leader>sn", function() Snacks.picker.notifications() end, desc = "[S]earch [N]otification History" },
     { "<leader><leader>", function() Snacks.picker.buffers() end, desc = "Buffers" },
     { "<leader>gs", function() Snacks.picker.git_status() end, desc = "[G]it [S]tatus" },
     { "<leader>gl", function() Snacks.picker.git_log() end, desc = "[G]it [L]og" },
     { "<leader>sn", function() Snacks.picker.files({ cwd = vim.fn.stdpath("config") }) end, desc = "[S]earch [N]eovim files" },
-    { "<leader>n", function() Snacks.explorer() end, "Toggle File Explorer" },
-    { "gd", function() Snacks.picker.lsp_definitions() end, "[G]oto [D]efinition" },
-    { "gD", function() Snacks.picker.lsp_declarations() end, "[G]oto [D]eclaration" },
-    { "gr", function() Snacks.picker.lsp_references() end, "[G]oto [R]eferences" },
-    { "gI", function() Snacks.picker.lsp_implementations() end, "[G]oto [I]mplementation" },
-    { "<leader>D", function() Snacks.picker.lsp_type_definitions() end, "Type [D]efinition" },
-    { "<leader>ds", function() Snacks.picker.lsp_symbols() end, "[D]ocument [S]ymbols" },
-    { "<leader>ws", function() Snacks.picker.lsp_workspace_symbols() end, "[W]orkspace [S]ymbols" },
-    { "<leader>go", function() Snacks.gitbrowse.open() end, "[G]it [O]pen in Github" },
+    { "<leader>n", function() Snacks.explorer() end, desc = "Toggle File Explorer" },
+    { "gd", function() Snacks.picker.lsp_definitions() end, desc = "[G]oto [D]efinition" },
+    { "gD", function() Snacks.picker.lsp_declarations() end, desc = "[G]oto [D]eclaration" },
+    { "gr", function() Snacks.picker.lsp_references() end, desc = "[G]oto [R]eferences" },
+    { "gI", function() Snacks.picker.lsp_implementations() end, desc = "[G]oto [I]mplementation" },
+    { "<leader>D", function() Snacks.picker.lsp_type_definitions() end, desc = "Type [D]efinition" },
+    { "<leader>ds", function() Snacks.picker.lsp_symbols() end, desc = "[D]ocument [S]ymbols" },
+    { "<leader>ws", function() Snacks.picker.lsp_workspace_symbols() end, desc = "[W]orkspace [S]ymbols" },
+    { "<leader>go", function() Snacks.gitbrowse.open() end, desc = "[G]it [O]pen in Github" },
   },
   lspconfig = {
-    { "<leader>rn", vim.lsp.buf.rename, "[R]e[n]ame" },
-    { "<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction" },
-    { "K", vim.lsp.buf.hover, "Hover Documentation" },
+    { "<leader>rn", vim.lsp.buf.rename, desc = "[R]e[n]ame" },
+    { "<leader>ca", vim.lsp.buf.code_action, desc = "[C]ode [A]ction" },
+    { "K", vim.lsp.buf.hover, desc = "Hover Documentation" },
   },
   conform = {
     {
@@ -141,15 +142,6 @@ local keys = {
       end,
       mode = "",
       desc = "[F]ormat buffer",
-    },
-  },
-  neotree = {
-    {
-      "<leader>n",
-      function()
-        Snacks.explorer()
-      end,
-      desc = "Toggle [N]eoTree",
     },
   },
   gitsigns = {
@@ -231,12 +223,39 @@ require("lazy").setup({
       indent = { enabled = true },
       input = { enabled = true },
       picker = {
+
         enabled = true,
         sources = {
           explorer = {
             auto_close = true,
           },
         },
+
+        layout = 'my_telescope_top',
+        layouts = {
+          my_telescope_top = {
+            layout = {
+              box = 'horizontal',
+              backdrop = true,
+              width = 0.8,
+              height = 0.9,
+              border = 'none',
+              {
+                box = 'vertical',
+                { win = 'input', height = 1, border = 'rounded', title = '{title} {live} {flags}', title_pos = 'center' },
+                { win = 'list', title = ' Results ', title_pos = 'center', border = 'rounded' },
+              },
+              {
+                win = 'preview',
+                title = '{preview:Preview}',
+                width = 0.45,
+                border = 'single',
+                title_pos = 'center',
+              },
+            },
+          },
+        },
+
       },
       notifier = { enabled = true },
       quickfile = { enabled = true },
